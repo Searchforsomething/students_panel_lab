@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: student_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - db
+    environment:
+      - REACT_APP_API_URL=http://backend:8000
+    networks:
+      - student_network
+
+  backend:
+    build: ./api
+    container_name: student_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - student_network
+
+  db:
+    image: db_image
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: students_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dump:/var/lib/postgresql/data
+    networks:
+      - student_network
+
+networks:
+  student_network:
+    driver: bridge
